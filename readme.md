@@ -67,8 +67,8 @@ Rx.Observable.range(0, 5)
 ```
 
 ## `polling(interval, maxAttempts)`
-It will get elements emitted by the previous observer, waiting `interval`
-milliseconds. It will stop after `maxAttempts`.
+It will get elements emitted by the observable, waiting `interval` milliseconds.
+It will stop after `maxAttempts`.
 
 This method is useful for polling a web service repeatedly until a condition
 is met.
@@ -84,4 +84,24 @@ Rx.Observable.just('my/polling_results/service/url') // {results: [...], finishe
   .flatMap(res => Rx.Observable.fromArray(results))
   .distinct()
   .forEach(console.log); // result1 result2 result3... After 5 attempts or finished === true
+```
+
+## `cache(time)`
+It will cache the last result provided by the observable for `time` milliseconds.
+It won't ask the observable for new values during that time
+```js
+const rest = require('rest');
+const mime = require('rest/interceptor/mime');
+const client = rest.wrap(mime); // Using cujojs/rest
+const slow = Rx.Observable.just('my/slow/service/url') // {value: 1}
+  .cached(10000)
+  .map(res => res.value);
+
+slow.forEach(console.log); // 1 (will call my/slow/service/url)
+slow.forEach(console.log); // 1 (won't call my/slow/service/url)
+setTimeout(
+  () => slow.forEach(console.log),
+  11000
+); // 1 (after 11000 ms, will call my/slow/service/url)
+
 ```
