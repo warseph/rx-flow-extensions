@@ -65,3 +65,23 @@ Rx.Observable.range(0, 5)
   .takeWhileInclusive(x => x < 3)
   .forEach(console.log); // 0 1 2 3
 ```
+
+## `polling(interval, maxAttempts)`
+It will get elements emitted by the previous observer, waiting `interval`
+milliseconds. It will stop after `maxAttempts`.
+
+This method is useful for polling a web service repeatedly until a condition
+is met.
+```js
+const rest = require('rest');
+const mime = require('rest/interceptor/mime');
+const client = rest.wrap(mime); // Using cujojs/rest
+Rx.Observable.just('my/polling_results/service/url') // {results: [...], finished: true|false}
+  .flatMap(client)
+  .polling(1000, 5)
+  .map(res => res.entity)
+  .takeWhileInclusive(res => !res.finished)
+  .flatMap(res => Rx.Observable.fromArray(results))
+  .distinct()
+  .forEach(console.log); // result1 result2 result3... After 5 attempts or finished === true
+```
