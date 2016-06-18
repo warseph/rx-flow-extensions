@@ -56,3 +56,12 @@ Rx.Observable.range(0, 5)
   .just('test!')
   .forEach(console.log); // test! (5 times)
 ```
+
+## `takeWhileInclusive(condition)`
+It will take elements while the condition is true, including the element after
+the condition fails for the first time (similar effect to `do while` loops)
+```js
+Rx.Observable.range(0, 5)
+  .takeWhileInclusive(x => x < 3)
+  .forEach(console.log); // 0 1 2 3
+```
