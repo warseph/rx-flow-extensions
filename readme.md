@@ -1,6 +1,6 @@
 # Rx Flow Extensions
 
-This are simple extensions to make handling some common Rx flows a bit
+These are simple extensions to make handling some common Rx flows a bit
 more simple.
 
 # Instalation:
