@@ -86,7 +86,7 @@ Rx.Observable.just('my/polling_results/service/url') // {results: [...], finishe
   .forEach(console.log); // result1 result2 result3... After 5 attempts or finished === true
 ```
 
-## `cache(time)`
+## `cached(time)`
 It will cache the last result provided by the observable for `time` milliseconds.
 It won't ask the observable for new values during that time
 ```js
