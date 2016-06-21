@@ -4,9 +4,9 @@ const libExt = require('library-extensions');
 
 module.exports = libExt.bundle([
   /* eslint global-require: 0 */
+  require('./extensions/cached'),
   require('./extensions/just'),
-  require('./extensions/take-while-inclusive'),
+  require('./extensions/matching'),
   require('./extensions/polling'),
-  require('./extensions/cached')
-
+  require('./extensions/take-while-inclusive')
 ]);

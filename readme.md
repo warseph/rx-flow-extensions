@@ -105,3 +105,26 @@ setTimeout(
 ); // 1 (after 11000 ms, will call my/slow/service/url)
 
 ```
+
+## `matching(obs2, groupBy, condition)`
+It will merge two observers based on a condition (similar to how two tables are
+merged in a RDBMS).
+```js
+const obs1 = Rx.Observable.from([
+  {id: 1, value: 'value a'},
+  {id: 2, value: 'value b'},
+  {id: 3, value: 'value c'}
+]);
+const obs2 = Rx.Observable.from([
+  {foreignId: 3, value2: 'matches' },
+  {foreignId: 2, value2: 'matches' },
+  {foreignId: 4, value2: 'does not match' }
+  {foreignId: 1, value2: 'matches' },
+]);
+
+obs1.matching(obs2, a => a.id, (id, b) => id = b.foreignId)
+  .foreach(console.log); /* will emmit:
+    [{id: 1, value: 'value a'}, {foreignId: 1, value2: 'matches' }]
+    [{id: 2, value: 'value b'}, {foreignId: 2, value2: 'matches' }]
+    [{id: 3, value: 'value c'}, {foreignId: 3, value2: 'matches' }]
+```
