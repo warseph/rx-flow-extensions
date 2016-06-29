@@ -1,6 +1,6 @@
 'use strict';
 /* eslint-env node, mocha */
-/* global expect, sinon */
+/* global expect, sinon, fakeTime, fail */
 /* eslint prefer-arrow-callback: 0 */
 /* eslint no-unused-expressions: 0 */
 const Rx = require('rx');
@@ -8,91 +8,45 @@ require('../helper');
 const cached = require('../../extensions/cached');
 
 describe('cached', function () {
-  let clock;
-  before(() => { clock = sinon.useFakeTimers(); });
-  after(() => clock.restore());
+  const withTestData = (fn) => {
+    const onNext = sinon.spy();
+    const operation = sinon.spy(v => v + 1);
+    const observable = cached.static(Rx.Observable.just(0).map(operation), 100);
+    return fn(observable, operation, onNext);
+  };
 
-  it('should get the value from the observable the first time', function (done) {
-    const tester = sinon.spy();
-    const map = sinon.spy(v => v + 1);
-    const mapped = Rx.Observable.just(null).map(map);
-    cached.extend(mapped);
-    const obs = mapped.cached(100);
-    obs.subscribe(
-      tester,
-      e => expect.fail(null, null, e.message),
-      () => {
-        expect(tester).to.have.calledOnce;
-        expect(map).to.have.been.calledOnce;
-        expect(tester).to.have.been.calledWith(1);
+  it('should cache elements for a second call`',
+    (done) => withTestData((observable, operation, onNext) => {
+      observable.subscribe(onNext);
+      observable.subscribe(onNext, fail, () => {
+        expect(onNext).to.have.calledTwice;
+        expect(operation).to.have.been.calledOnce;
         done();
-      }
-    );
-  });
+      });
+    })
+  );
 
-  it('should have cached elements for a second call`', function (done) {
-    const tester = sinon.spy();
-    const map = sinon.spy(v => v + 1);
-    const mapped = Rx.Observable.just(null).map(map);
-    cached.extend(mapped);
-    const obs = mapped.cached(100);
-    obs.subscribe(tester);
-    obs.subscribe(
-      tester,
-      e => expect.fail(null, null, e.message),
-      () => {
-        expect(tester).to.have.calledTwice;
-        expect(map).to.have.been.calledOnce;
-        expect(tester).to.have.been.calledWith(1);
+  it('should cache elements for the specified time',
+    fakeTime((clock, done) => withTestData((observable, operation, onNext) => {
+      setTimeout(() => observable.subscribe(onNext, fail, () => {
+        expect(onNext).to.have.calledThrice;
+        expect(operation).to.have.been.calledTwice;
         done();
-      }
-    );
-  });
+      }), 200);
+      observable.subscribe(onNext);
+      observable.subscribe(onNext, fail, () => clock.tick(200));
+    })
+  ));
 
-  it('should cache elements for the specified time', function (done) {
-    const tester = sinon.spy();
-    const map = sinon.spy(v => v + 1);
-    const mapped = Rx.Observable.just(null).map(map);
-    cached.extend(mapped);
-    const obs = mapped.cached(100);
-    setTimeout(
-      () => {
-        obs.subscribe(
-          tester,
-          e => expect.fail(null, null, e.message),
-          () => {
-            expect(tester).to.have.calledTwice;
-            expect(map).to.have.been.calledTwice;
-            expect(tester).to.have.been.calledWith(1);
-            done();
-          }
-        );
-      },
-      100);
-    obs.doOnCompleted(() => clock.tick(100)).subscribe(tester);
-  });
-
-  it('should recache elements after invalidating', function (done) {
-    const tester = sinon.spy();
-    const map = sinon.spy(v => v + 1);
-    const mapped = Rx.Observable.just(null).map(map);
-    cached.extend(mapped);
-    const obs = mapped.cached(100);
-    setTimeout(
-      () => {
-        obs.subscribe(tester);
-        obs.subscribe(
-          tester,
-          e => expect.fail(null, null, e.message),
-          () => {
-            expect(tester).to.have.calledTwice;
-            expect(map).to.have.been.calledTwice;
-            expect(tester).to.have.been.calledWith(1);
-            done();
-          }
-        );
-      },
-      100);
-    obs.doOnCompleted(() => clock.tick(100)).subscribe();
-  });
+  it('should recache elements after invalidating',
+    fakeTime((clock, done) => withTestData((observable, operation, onNext) => {
+      setTimeout(() => observable.subscribe(onNext), 150);
+      setTimeout(() => observable.subscribe(onNext, fail, () => {
+        expect(onNext).to.have.calledThrice;
+        expect(operation).to.have.been.calledTwice;
+        done();
+      }), 200);
+      observable.subscribe(onNext, fail, () => clock.tick(200));
+    }))
+  );
 });
