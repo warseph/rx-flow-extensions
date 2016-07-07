@@ -6,12 +6,13 @@ const libExt = require('library-extensions');
 const currentTime = () => new Date().getTime();
 const cache = function* (time, operation) {
   /* eslint no-constant-condition: 0 */
+  const cacheForever = (time === undefined || time === null);
   while (true) {
-    const cachedAt = currentTime();
+    const expires = currentTime() + time;
     const value = operation();
     do {
       yield value;
-    } while (time + cachedAt > currentTime());
+    } while (cacheForever || expires > currentTime());
   }
 };
 
