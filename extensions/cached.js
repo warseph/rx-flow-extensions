@@ -10,9 +10,10 @@ const cache = function* (time, operation) {
   while (true) {
     const expires = currentTime() + time;
     const value = operation();
-    do {
-      yield value;
-    } while (cacheForever || expires > currentTime());
+    yield value;
+    while (cacheForever || expires > currentTime()) {
+      yield value.catch(() => operation());
+    }
   }
 };
 

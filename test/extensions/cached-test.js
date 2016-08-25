@@ -4,9 +4,9 @@ const Rx = require('rx');
 const cached = require('../../extensions/cached');
 
 describe('cached', () => {
-  const withTestData = fn => {
+  const withTestData = (fn, op) => {
     const onNext = sinon.spy();
-    const operation = sinon.spy(v => v + 1);
+    const operation = sinon.spy(op || (v => v + 1));
     const observable = cached.static(Rx.Observable.just(0).map(operation), 100);
     return fn(observable, operation, onNext);
   };
@@ -47,4 +47,30 @@ describe('cached', () => {
       observable.subscribe(onNext, fail, () => clock.tick(200));
     }))
   );
+
+  it('should not cache errors', done => {
+    let calls = 0;
+    const op = v => {
+      calls += 1;
+      if (calls === 2) {
+        throw new Error('test');
+      } else {
+        return v + 1;
+      }
+    };
+    fakeTime((finish, clock) => withTestData((observable, operation, onNext) => {
+      const failure = sinon.spy();
+      setTimeout(() => observable.subscribe(onNext, failure, () => {
+        expect(onNext).to.have.not.been.called;
+        expect(failure).to.have.been.calledOnce;
+      }), 150);
+      setTimeout(() => observable.subscribe(onNext, e => fail(e), () => {
+        expect(onNext).to.have.calledTwice;
+        expect(operation).to.have.been.calledThrice;
+        finish();
+        done();
+      }), 200);
+      observable.subscribe(onNext, fail, () => clock.tick(200));
+    }, op));
+  });
 });
