@@ -1,13 +1,10 @@
 'use strict';
-/* eslint-env node, mocha */
-/* global expect, sinon */
-/* eslint prefer-arrow-callback: 0 */
+
 const Rx = require('rx');
-require('../helper');
 const matching = require('../../extensions/matching');
 
-describe('matching', function () {
-  it('should merge two observables using a condition', function (done) {
+describe('matching', () => {
+  it('should merge two observables using a condition', done => {
     const obs1 = Rx.Observable.from([
       {id: 1, value: 'a'},
       {id: 2, value: 'b'},
@@ -39,7 +36,7 @@ describe('matching', function () {
       );
   });
 
-  it('should return all elements with a match, even if repeated', function (done) {
+  it('should return all elements with a match, even if repeated', done => {
     const obs1 = Rx.Observable.from([
       {id: 1, value: 'a'},
       {id: 1, value: 'b'}

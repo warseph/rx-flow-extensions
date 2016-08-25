@@ -1,13 +1,10 @@
 'use strict';
-/* eslint-env node, mocha */
-/* global expect, sinon */
-/* eslint prefer-arrow-callback: 0 */
+
 const Rx = require('rx');
-require('../helper');
 const takeWhileInclusive = require('../../extensions/take-while-inclusive');
 
-describe('takeWhileInclusive', function () {
-  it('should take elements until one after the condition is true', function (done) {
+describe('takeWhileInclusive', () => {
+  it('should take elements until one after the condition is true', done => {
     const obs = Rx.Observable.range(0, 5);
     takeWhileInclusive.extend(obs);
     const tester = sinon.spy();

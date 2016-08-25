@@ -1,14 +1,10 @@
 'use strict';
-/* eslint-env node, mocha */
-/* global expect, sinon, fakeTime, fail */
-/* eslint prefer-arrow-callback: 0 */
-/* eslint no-unused-expressions: 0 */
+
 const Rx = require('rx');
-require('../helper');
 const cached = require('../../extensions/cached');
 
-describe('cached', function () {
-  const withTestData = (fn) => {
+describe('cached', () => {
+  const withTestData = fn => {
     const onNext = sinon.spy();
     const operation = sinon.spy(v => v + 1);
     const observable = cached.static(Rx.Observable.just(0).map(operation), 100);
@@ -16,7 +12,7 @@ describe('cached', function () {
   };
 
   it('should cache elements for a second call`',
-    (done) => withTestData((observable, operation, onNext) => {
+    done => withTestData((observable, operation, onNext) => {
       observable.subscribe(onNext);
       observable.subscribe(onNext, fail, () => {
         expect(onNext).to.have.calledTwice;
@@ -26,11 +22,12 @@ describe('cached', function () {
     })
   );
 
-  it('should cache elements for the specified time',
-    fakeTime((clock, done) => withTestData((observable, operation, onNext) => {
+  it('should cache elements for the specified time', done =>
+    fakeTime((finish, clock) => withTestData((observable, operation, onNext) => {
       setTimeout(() => observable.subscribe(onNext, fail, () => {
         expect(onNext).to.have.calledThrice;
         expect(operation).to.have.been.calledTwice;
+        finish();
         done();
       }), 200);
       observable.subscribe(onNext);
@@ -38,12 +35,13 @@ describe('cached', function () {
     })
   ));
 
-  it('should recache elements after invalidating',
-    fakeTime((clock, done) => withTestData((observable, operation, onNext) => {
+  it('should recache elements after invalidating', done =>
+    fakeTime((finish, clock) => withTestData((observable, operation, onNext) => {
       setTimeout(() => observable.subscribe(onNext), 150);
       setTimeout(() => observable.subscribe(onNext, fail, () => {
         expect(onNext).to.have.calledThrice;
         expect(operation).to.have.been.calledTwice;
+        finish();
         done();
       }), 200);
       observable.subscribe(onNext, fail, () => clock.tick(200));
