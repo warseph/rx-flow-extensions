@@ -1,6 +1,6 @@
 {
   "name": "rx-flow-extensions",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Extends Rx with some additional utility functions",
   "main": "index.js",
   "scripts": {
