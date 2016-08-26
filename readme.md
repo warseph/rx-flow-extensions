@@ -44,6 +44,20 @@ obs.just(2)
   .then(console.log); // 2
 ```
 
+### Removing the extensions
+You can reset an extended object (i.e. remove all the added methods) by running
+```js
+const Rx = require('rx');
+const RxFlowExt = require('rx-flow-extensions');
+RxFlowExt.extend(Rx.Observable.prototype);
+RxFlowExt.reset(Rx.Observable.prototype);
+
+const obs = Rx.Observable.just(1);
+obs.just(2) // obs.just is not a function
+  .then(console.log);
+```
+
+
 # Methods
 
 All methods can be called using the 3 options shown above, we'll assume we have
