@@ -3,26 +3,15 @@
 const Rx = require('rx');
 const libExt = require('library-extensions');
 
-const currentTime = () => new Date().getTime();
-const cache = function* (time, operation) {
-  /* eslint no-constant-condition: 0 */
-  const cacheForever = (time === undefined || time === null);
-  while (true) {
-    const expires = currentTime() + time;
-    const value = operation();
-    yield value;
-    while (cacheForever || expires > currentTime()) {
-      yield value.catch(() => operation());
-    }
-  }
-};
-
 module.exports = libExt.create('cached', (obs, time) => {
-  const createCache = () => {
-    const replay = new Rx.ReplaySubject();
-    obs.subscribe(replay);
-    return replay;
-  };
-  return Rx.Observable.from(cache(time, createCache)).take(1).flatMap(x => x);
+  let cache;
+  const invalidate = () => { cache = undefined; };
+  return Rx.Observable.create(observer => {
+    if (cache === undefined) {
+      cache = obs.doOnError(invalidate).shareReplay();
+      setTimeout(invalidate, time);
+    }
+    observer.onNext(cache);
+    observer.onCompleted();
+  }).flatMap(x => x);
 });
-

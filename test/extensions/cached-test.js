@@ -11,7 +11,7 @@ describe('cached', () => {
     return fn(observable, operation, onNext);
   };
 
-  it('should cache elements for a second call`',
+  it('should cache elements for a second call',
     done => withTestData((observable, operation, onNext) => {
       observable.subscribe(onNext);
       observable.subscribe(onNext, fail, () => {
