@@ -63,43 +63,6 @@ obs.just(2) // obs.just is not a function
 All methods can be called using the 3 options shown above, we'll assume we have
 extended all observables for all examples.
 
-## `just(value)`
-It just maps the emitted observable values to the specified `value`
-```js
-Rx.Observable.range(0, 5)
-  .just('test!')
-  .forEach(console.log); // test! (5 times)
-```
-
-## `takeWhileInclusive(condition)`
-It will take elements while the condition is true, including the element after
-the condition fails for the first time (similar effect to `do while` loops)
-```js
-Rx.Observable.range(0, 5)
-  .takeWhileInclusive(x => x < 3)
-  .forEach(console.log); // 0 1 2 3
-```
-
-## `polling(interval, maxAttempts)`
-It will get elements emitted by the observable, waiting `interval` milliseconds.
-It will stop after `maxAttempts`.
-
-This method is useful for polling a web service repeatedly until a condition
-is met.
-```js
-const rest = require('rest');
-const mime = require('rest/interceptor/mime');
-const client = rest.wrap(mime); // Using cujojs/rest
-Rx.Observable.just('my/polling_results/service/url') // {results: [...], finished: true|false}
-  .flatMap(client)
-  .polling(1000, 5)
-  .map(res => res.entity)
-  .takeWhileInclusive(res => !res.finished)
-  .flatMap(res => Rx.Observable.fromArray(results))
-  .distinct()
-  .forEach(console.log); // result1 result2 result3... After 5 attempts or finished === true
-```
-
 ## `cached(time)`
 It will cache the last result provided by the observable for `time` milliseconds.
 It won't ask the observable for new values during that time
@@ -118,6 +81,23 @@ setTimeout(
   11000
 ); // 1 (after 11000 ms, will call my/slow/service/url)
 
+```
+
+## `flatten()`
+It will flatten an observable of observables of values into an observable of values
+```js
+Rx.Observable.range(0, 5)
+  .map(v => Rx.Observable.just('test'))
+  .flatten()
+  .forEach(console.log); // test! (5 times)
+```
+
+## `just(value)`
+It just maps the emitted observable values to the specified `value`
+```js
+Rx.Observable.range(0, 5)
+  .just('test!')
+  .forEach(console.log); // test! (5 times)
 ```
 
 ## `matching(obs2, groupBy, condition)`
@@ -141,4 +121,33 @@ obs1.matching(obs2, a => a.id, (id, b) => id = b.foreignId)
     [{id: 1, value: 'value a'}, {foreignId: 1, value2: 'matches' }]
     [{id: 2, value: 'value b'}, {foreignId: 2, value2: 'matches' }]
     [{id: 3, value: 'value c'}, {foreignId: 3, value2: 'matches' }]
+```
+
+## `polling(interval, maxAttempts)`
+It will get elements emitted by the observable, waiting `interval` milliseconds.
+It will stop after `maxAttempts`.
+
+This method is useful for polling a web service repeatedly until a condition
+is met.
+```js
+const rest = require('rest');
+const mime = require('rest/interceptor/mime');
+const client = rest.wrap(mime); // Using cujojs/rest
+Rx.Observable.just('my/polling_results/service/url') // {results: [...], finished: true|false}
+  .flatMap(client)
+  .polling(1000, 5)
+  .map(res => res.entity)
+  .takeWhileInclusive(res => !res.finished)
+  .flatMap(res => Rx.Observable.fromArray(results))
+  .distinct()
+  .forEach(console.log); // result1 result2 result3... After 5 attempts or finished === true
+```
+
+## `takeWhileInclusive(condition)`
+It will take elements while the condition is true, including the element after
+the condition fails for the first time (similar effect to `do while` loops)
+```js
+Rx.Observable.range(0, 5)
+  .takeWhileInclusive(x => x < 3)
+  .forEach(console.log); // 0 1 2 3
 ```
