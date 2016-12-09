@@ -22,6 +22,20 @@ describe('cached', () => {
     })
   );
 
+  it('should work with nested subscriptions', done =>
+    fakeTime((finish, clock) => withTestData((obs, operation, onNext) => {
+      const observable = cached.static(obs);
+
+      setTimeout(() => observable.subscribe(onNext, fail, () => {
+        expect(onNext).to.have.calledThrice;
+        expect(operation).to.have.been.calledOnce;
+        finish();
+        done();
+      }), 200);
+      observable.subscribe(onNext);
+      observable.subscribe(onNext, fail, () => clock.tick(200));
+    })));
+
   it('should cache elements for the specified time', done =>
     fakeTime((finish, clock) => withTestData((observable, operation, onNext) => {
       setTimeout(() => observable.subscribe(onNext, fail, () => {

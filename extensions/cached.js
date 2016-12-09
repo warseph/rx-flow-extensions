@@ -9,7 +9,9 @@ module.exports = libExt.create('cached', (obs, time) => {
   return Rx.Observable.create(observer => {
     if (cache === undefined) {
       cache = obs.doOnError(invalidate).shareReplay();
-      setTimeout(invalidate, time);
+      if (time > 0) {
+        setTimeout(invalidate, time);
+      }
     }
     observer.onNext(cache);
     observer.onCompleted();
