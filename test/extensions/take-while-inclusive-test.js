@@ -1,6 +1,6 @@
 'use strict';
 
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const takeWhileInclusive = require('../../extensions/take-while-inclusive');
 
 describe('takeWhileInclusive', () => {
@@ -8,7 +8,7 @@ describe('takeWhileInclusive', () => {
     const obs = Rx.Observable.range(0, 5);
     takeWhileInclusive.extend(obs);
     const tester = sinon.spy();
-    obs.takeWhileInclusive(v => v < 2).forEach(
+    obs.takeWhileInclusive(v => v < 2).subscribe(
       tester,
       e => expect.fail(null, null, e.message),
       () => {
@@ -25,7 +25,7 @@ describe('takeWhileInclusive', () => {
     const obs = Rx.Observable.range(0, 5);
     takeWhileInclusive.extend(obs);
     const tester = sinon.spy();
-    obs.takeWhileInclusive(v => v < 2, 3).forEach(
+    obs.takeWhileInclusive(v => v < 2, 3).subscribe(
       tester,
       e => expect.fail(null, null, e.message),
       () => {

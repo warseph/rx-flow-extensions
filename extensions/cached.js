@@ -1,6 +1,6 @@
 'use strict';
 
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const libExt = require('library-extensions');
 
 module.exports = libExt.create('cached', (obs, time) => {
@@ -8,12 +8,12 @@ module.exports = libExt.create('cached', (obs, time) => {
   const invalidate = () => { cache = undefined; };
   return Rx.Observable.create(observer => {
     if (cache === undefined) {
-      cache = obs.doOnError(invalidate).shareReplay();
+      cache = obs.do(null, invalidate).shareReplay();
       if (time > 0) {
         setTimeout(invalidate, time);
       }
     }
-    observer.onNext(cache);
-    observer.onCompleted();
+    observer.next(cache);
+    observer.complete();
   }).flatMap(x => x);
 });

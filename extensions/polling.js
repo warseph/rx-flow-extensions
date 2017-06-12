@@ -1,11 +1,11 @@
 'use strict';
 
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const libExt = require('library-extensions');
 
 module.exports = libExt.create('polling', (obs, interval, maxAttempts) =>
-  Rx.Observable.just(0)
+  Rx.Observable.of(0)
     .merge(Rx.Observable.interval(interval))
-    .flatMapFirst(() => obs)
+    .exhaustMap(() => obs)
     .take(maxAttempts)
-  );
+);

@@ -1,6 +1,6 @@
 'use strict';
 
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const polling = require('../../extensions/polling');
 
 describe('polling', () => {
@@ -9,16 +9,16 @@ describe('polling', () => {
     polling.extend(obs);
     const tester = sinon.spy();
     obs.polling(10, 3)
-      .forEach(
-        tester,
-        e => expect.fail(null, null, e.message),
-        () => {
-          expect(tester).to.have.callCount(3);
-          expect(tester).to.have.been.calledWith(0);
-          expect(tester).to.have.been.calledWith(1);
-          expect(tester).to.have.been.calledWith(2);
-          done();
-        }
+      .subscribe(
+      tester,
+      e => expect.fail(null, null, e.message),
+      () => {
+        expect(tester).to.have.callCount(3);
+        expect(tester).to.have.been.calledWith(0);
+        expect(tester).to.have.been.calledWith(1);
+        expect(tester).to.have.been.calledWith(2);
+        done();
+      }
       );
   });
 });

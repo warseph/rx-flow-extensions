@@ -14,10 +14,10 @@ $ npm install --save rx-flow-extensions
 The library can be used in three ways
 ### Directly accessing the helper methods:
 ```js
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const RxFlowExt = require('rx-flow-extensions');
 
-const obs = Rx.Observable.just(1);
+const obs = Rx.Observable.of(1);
 RxFlowExt.just(obs, 2)
   .then(console.log); // 2
 ```
@@ -25,21 +25,21 @@ RxFlowExt.just(obs, 2)
 observable
 ### Extending a specific observable:
 ```js
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const RxFlowExt = require('rx-flow-extensions');
 
-const obs = Rx.Observable.just(1);
+const obs = Rx.Observable.of(1);
 RxFlowExt.extend(obs);
 obs.just(2)
   .then(console.log); // 2
 ```
 ### Extending all observables
 ```js
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const RxFlowExt = require('rx-flow-extensions');
 RxFlowExt.extend(Rx.Observable.prototype);
 
-const obs = Rx.Observable.just(1);
+const obs = Rx.Observable.of(1);
 obs.just(2)
   .then(console.log); // 2
 ```
@@ -47,12 +47,12 @@ obs.just(2)
 ### Removing the extensions
 You can reset an extended object (i.e. remove all the added methods) by running
 ```js
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const RxFlowExt = require('rx-flow-extensions');
 RxFlowExt.extend(Rx.Observable.prototype);
 RxFlowExt.reset(Rx.Observable.prototype);
 
-const obs = Rx.Observable.just(1);
+const obs = Rx.Observable.of(1);
 obs.just(2) // obs.just is not a function
   .then(console.log);
 ```
@@ -70,14 +70,14 @@ It won't ask the observable for new values during that time
 const rest = require('rest');
 const mime = require('rest/interceptor/mime');
 const client = rest.wrap(mime); // Using cujojs/rest
-const slow = Rx.Observable.just('my/slow/service/url') // {value: 1}
+const slow = Rx.Observable.of('my/slow/service/url') // {value: 1}
   .cached(10000)
   .map(res => res.value);
 
-slow.forEach(console.log); // 1 (will call my/slow/service/url)
-slow.forEach(console.log); // 1 (won't call my/slow/service/url)
+slow.subscribe(console.log); // 1 (will call my/slow/service/url)
+slow.subscribe(console.log); // 1 (won't call my/slow/service/url)
 setTimeout(
-  () => slow.forEach(console.log),
+  () => slow.subscribe(console.log),
   11000
 ); // 1 (after 11000 ms, will call my/slow/service/url)
 
@@ -87,9 +87,9 @@ setTimeout(
 It will flatten an observable of observables of values into an observable of values
 ```js
 Rx.Observable.range(0, 5)
-  .map(v => Rx.Observable.just('test'))
+  .map(v => Rx.Observable.of('test'))
   .flatten()
-  .forEach(console.log); // test! (5 times)
+  .subscribe(console.log); // test! (5 times)
 ```
 
 ## `just(value)`
@@ -97,7 +97,7 @@ It just maps the emitted observable values to the specified `value`
 ```js
 Rx.Observable.range(0, 5)
   .just('test!')
-  .forEach(console.log); // test! (5 times)
+  .subscribe(console.log); // test! (5 times)
 ```
 
 ## `matching(obs2, groupBy, condition)`
@@ -117,7 +117,7 @@ const obs2 = Rx.Observable.from([
 ]);
 
 obs1.matching(obs2, a => a.id, (id, b) => id = b.foreignId)
-  .foreach(console.log); /* will emmit:
+  .subscribe(console.log); /* will emmit:
     [{id: 1, value: 'value a'}, {foreignId: 1, value2: 'matches' }]
     [{id: 2, value: 'value b'}, {foreignId: 2, value2: 'matches' }]
     [{id: 3, value: 'value c'}, {foreignId: 3, value2: 'matches' }]
@@ -133,14 +133,14 @@ is met.
 const rest = require('rest');
 const mime = require('rest/interceptor/mime');
 const client = rest.wrap(mime); // Using cujojs/rest
-Rx.Observable.just('my/polling_results/service/url') // {results: [...], finished: true|false}
+Rx.Observable.of('my/polling_results/service/url') // {results: [...], finished: true|false}
   .flatMap(client)
   .polling(1000, 5)
   .map(res => res.entity)
   .takeWhileInclusive(res => !res.finished)
   .flatMap(res => Rx.Observable.fromArray(results))
   .distinct()
-  .forEach(console.log); // result1 result2 result3... After 5 attempts or finished === true
+  .subscribe(console.log); // result1 result2 result3... After 5 attempts or finished === true
 ```
 
 ## `takeWhileInclusive(condition)`
@@ -149,5 +149,5 @@ the condition fails for the first time (similar effect to `do while` loops)
 ```js
 Rx.Observable.range(0, 5)
   .takeWhileInclusive(x => x < 3)
-  .forEach(console.log); // 0 1 2 3
+  .subscribe(console.log); // 0 1 2 3
 ```

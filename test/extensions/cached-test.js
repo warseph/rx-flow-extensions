@@ -1,13 +1,13 @@
 'use strict';
 
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const cached = require('../../extensions/cached');
 
 describe('cached', () => {
   const withTestData = (fn, op) => {
     const onNext = sinon.spy();
     const operation = sinon.spy(op || (v => v + 1));
-    const observable = cached.static(Rx.Observable.just(0).map(operation), 100);
+    const observable = cached.static(Rx.Observable.of(0).map(operation), 100);
     return fn(observable, operation, onNext);
   };
 
@@ -47,7 +47,7 @@ describe('cached', () => {
       observable.subscribe(onNext);
       observable.subscribe(onNext, fail, () => clock.tick(200));
     })
-  ));
+    ));
 
   it('should recache elements after invalidating', done =>
     fakeTime((finish, clock) => withTestData((observable, operation, onNext) => {

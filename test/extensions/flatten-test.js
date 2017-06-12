@@ -1,6 +1,6 @@
 'use strict';
 
-const Rx = require('rx');
+const Rx = require('rxjs/Rx');
 const flatten = require('../../extensions/flatten');
 
 describe('flatten', () => {
@@ -17,12 +17,9 @@ describe('flatten', () => {
       .flatten()
       .toArray()
       .map(arr => arr.sort())
-      .doOnNext(tester)
-      .doOnError(fail)
-      .doOnCompleted(() => {
+      .subscribe(tester, fail, () => {
         expect(tester).to.have.been.calledOnce;
         done();
-      })
-      .subscribe();
+      });
   });
 });
